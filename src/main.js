@@ -4,6 +4,10 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({
+  ignoreMobileResize: true,
+  autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
+});
 
 const canvas = document.querySelector("#webgl");
 const letters = document.querySelectorAll(".headline-1 span:not(.space)");
@@ -75,9 +79,10 @@ function createCloud(x, y, z, scale) {
     [0.18, 0.38, 0.04, 0.55],
     [-0.2, 0.06, 0.32, 0.5],
   ];
+  const segments = isMobile() ? 10 : 16;
 
   for (const [px, py, pz, size] of puffs) {
-    const puff = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), material);
+    const puff = new THREE.Mesh(new THREE.SphereGeometry(1, segments, segments), material);
     puff.position.set(px, py, pz);
     puff.scale.set(size * 1.45, size * 0.82, size);
     group.add(puff);
@@ -103,11 +108,11 @@ camera.position.set(0, 0, 6);
 
 const renderer = new THREE.WebGLRenderer({
   canvas,
-  antialias: true,
+  antialias: !isMobile(),
   powerPreference: "high-performance",
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile() ? 1.5 : 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -142,12 +147,14 @@ const fogEnd = new THREE.Color(0xe8d7b0);
 const clock = new THREE.Clock();
 const modelState = {
   group: new THREE.Group(),
+  float: new THREE.Group(),
   ready: false,
 };
 
 modelState.group.position.set(0, -1.55, 1.4);
 modelState.group.rotation.set(0.28, 0.12, 0.04);
 modelState.group.scale.setScalar(0.88);
+modelState.group.add(modelState.float);
 scene.add(modelState.group);
 
 function createCookieMaterial(texture, tint = 0xffffff) {
@@ -190,7 +197,7 @@ const cookieLoader = new THREE.TextureLoader();
 cookieLoader.load(
   "/cookie.png",
   (texture) => {
-    modelState.group.add(createCookie(texture));
+    modelState.float.add(createCookie(texture));
     modelState.ready = true;
   },
   undefined,
@@ -205,7 +212,8 @@ gsap
       trigger: document.body,
       start: "top top",
       end: "bottom bottom",
-      scrub: 1.1,
+      scrub: isMobile() ? 0.35 : 0.85,
+      invalidateOnRefresh: false,
     },
   })
   .to(
@@ -269,7 +277,7 @@ function tick() {
   const p = skyMotion.progress;
 
   if (modelState.ready) {
-    modelState.group.position.y += Math.sin(t * 1.4) * 0.0018;
+    modelState.float.position.y = Math.sin(t * 1.2) * 0.04;
   }
 
   skyRig.position.set(p * 5.8, p * 2.6, 0);
@@ -286,22 +294,29 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
-function fitScene() {
+let lastWidth = window.innerWidth;
+
+function fitScene(forceRefresh = false) {
   const mobile = isMobile();
+  const widthChanged = window.innerWidth !== lastWidth;
+  lastWidth = window.innerWidth;
+
   camera.position.z = mobile ? 8.2 : 6;
   camera.fov = mobile ? 42 : 35;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  ScrollTrigger.refresh();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.5 : 2));
+
+  if (forceRefresh || widthChanged) {
+    ScrollTrigger.refresh();
+  }
   if (!mobile) {
     setMenuOpen(false);
   }
 }
 
 tick();
-fitScene();
+fitScene(true);
 
-window.addEventListener("resize", fitScene);
-window.visualViewport?.addEventListener("resize", fitScene);
+window.addEventListener("resize", () => fitScene(false));

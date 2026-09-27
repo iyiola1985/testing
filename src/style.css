@@ -6,18 +6,20 @@
   padding: 0;
 }
 
-html,
-body {
-  height: 100%;
+html {
   background: linear-gradient(180deg, #1d6ec7 0%, #5eb4ea 42%, #c5e6f8 72%, #f6e7c4 100%);
   color: #fff;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  touch-action: pan-y;
 }
 
 body {
   height: 380vh;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 #webgl {
@@ -28,7 +30,8 @@ body {
   height: 100dvh;
   display: block;
   z-index: 0;
-  touch-action: none;
+  pointer-events: none;
+  touch-action: pan-y;
 }
 
 .topbar {
@@ -201,7 +204,7 @@ body {
   position: absolute;
   width: min(640px, 78vw);
   height: min(520px, 62vw);
-  pointer-events: auto;
+  pointer-events: none;
   opacity: 0;
   z-index: 2;
 }
@@ -217,6 +220,7 @@ body {
   display: grid;
   place-items: center;
   cursor: pointer;
+  pointer-events: auto;
   box-shadow:
     0 8px 18px rgba(80, 40, 10, 0.18),
     inset 0 -3px 6px rgba(120, 60, 20, 0.16);
