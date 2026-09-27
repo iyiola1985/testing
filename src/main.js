@@ -59,7 +59,8 @@ function createCloud(x, y, z, scale) {
 }
 
 const scene = new THREE.Scene();
-scene.background = createSkyTexture();
+const skyTexture = createSkyTexture();
+scene.background = skyTexture;
 scene.fog = new THREE.Fog(0xc5e6f8, 12, 38);
 
 const camera = new THREE.PerspectiveCamera(
@@ -90,6 +91,7 @@ const rim = new THREE.DirectionalLight(0xffffff, 0.45);
 rim.position.set(-4, 2, -3);
 scene.add(rim);
 
+const skyRig = new THREE.Group();
 const clouds = [
   createCloud(-6.2, 2.4, -10, 1.6),
   createCloud(6.8, 1.6, -12, 2.1),
@@ -97,8 +99,15 @@ const clouds = [
   createCloud(3.2, -2.4, -14, 1.8),
 ];
 for (const cloud of clouds) {
-  scene.add(cloud);
+  skyRig.add(cloud);
 }
+
+scene.add(skyRig);
+
+const skyMotion = { progress: 0 };
+const cloudBases = clouds.map((cloud) => cloud.position.clone());
+const fogStart = new THREE.Color(0xc5e6f8);
+const fogEnd = new THREE.Color(0xe8d7b0);
 
 const clock = new THREE.Clock();
 const modelState = {
@@ -194,18 +203,29 @@ gsap
     0.35
   )
   .to(hotspotStage, { opacity: 1, duration: 1, ease: "power2.out" }, 0.5)
+  .to(skyMotion, { progress: 1, ease: "none" }, 0)
   .to(modelState.group.position, { x: 0, y: 0.05, z: 0.6, ease: "none" }, 0)
   .to(modelState.group.rotation, { x: 0.08, y: Math.PI * 2.05, z: 0, ease: "none" }, 0)
   .to(modelState.group.scale, { x: 1.08, y: 1.08, z: 1.08, ease: "none" }, 0);
 
 function tick() {
   const t = clock.getElapsedTime();
+  const p = skyMotion.progress;
+
   if (modelState.ready) {
     modelState.group.position.y += Math.sin(t * 1.4) * 0.0018;
   }
-  for (const cloud of clouds) {
-    cloud.position.x += Math.sin(t * 0.15 + cloud.position.z) * 0.0015;
-  }
+
+  skyRig.position.set(p * 5.8, p * 2.6, 0);
+  skyRig.rotation.z = p * 0.08;
+  scene.fog.color.copy(fogStart).lerp(fogEnd, p);
+
+  clouds.forEach((cloud, index) => {
+    const base = cloudBases[index];
+    cloud.position.x = base.x + Math.sin(t * 0.12 + base.z) * 0.35;
+    cloud.position.y = base.y + Math.cos(t * 0.09 + index) * 0.18;
+  });
+
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
 }

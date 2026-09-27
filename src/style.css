@@ -44,7 +44,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #111;
+  color: #fff;
   text-decoration: none;
 }
 
@@ -60,10 +60,11 @@ body {
 }
 
 .brand-name {
-  font-family: Inter, sans-serif;
-  font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: -0.03em;
+  font-family: "Passion One", sans-serif;
+  font-weight: 700;
+  font-size: 1.45rem;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 16px rgba(18, 52, 92, 0.28);
 }
 
 .nav {
@@ -73,11 +74,12 @@ body {
 }
 
 .nav a {
-  font-family: Inter, sans-serif;
-  font-size: 0.92rem;
-  font-weight: 500;
-  color: #111;
+  font-family: "Passion One", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
   text-decoration: none;
+  text-shadow: 0 4px 16px rgba(18, 52, 92, 0.28);
 }
 
 .nav a:hover {
@@ -91,10 +93,11 @@ body {
 }
 
 .nav-dot {
-  width: 8px;
-  height: 8px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: #111;
+  background: radial-gradient(circle at 35% 30%, #f3d2a3 0%, #e2b07a 60%, #c8894a 100%);
+  box-shadow: inset 0 0 0 1px rgba(90, 48, 16, 0.12);
 }
 
 .overlay {
@@ -132,8 +135,9 @@ body {
 
 .headline-2 {
   top: auto;
-  bottom: 6vh;
-  font-size: clamp(3.2rem, 9vw, 8rem);
+  bottom: 3.5vh;
+  z-index: 1;
+  font-size: clamp(2.6rem, 7vw, 6.2rem);
 }
 
 .headline span {
@@ -147,80 +151,140 @@ body {
 
 .hotspot-stage {
   position: absolute;
-  width: min(560px, 68vw);
-  height: min(560px, 68vw);
+  width: min(640px, 78vw);
+  height: min(520px, 62vw);
   pointer-events: auto;
   opacity: 0;
+  z-index: 2;
 }
 
 .hotspot {
   position: absolute;
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   border: 0;
   border-radius: 50%;
-  background: #111;
+  background: radial-gradient(circle at 32% 28%, #f6d7ad 0%, #e2b07a 58%, #c8894a 100%);
   color: #fff;
   display: grid;
   place-items: center;
   cursor: pointer;
+  box-shadow:
+    0 8px 18px rgba(80, 40, 10, 0.18),
+    inset 0 -3px 6px rgba(120, 60, 20, 0.16);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.hotspot svg {
-  width: 18px;
-  height: 18px;
+.cookie-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.cookie-face i {
+  position: absolute;
+  border-radius: 50%;
+  background: #4a2a16;
+}
+
+.cookie-face i:nth-child(1) {
+  width: 8px;
+  height: 7px;
+  top: 15px;
+  left: 16px;
+}
+
+.cookie-face i:nth-child(2) {
+  width: 6px;
+  height: 6px;
+  top: 28px;
+  left: 32px;
+}
+
+.cookie-face i:nth-child(3) {
+  width: 7px;
+  height: 6px;
+  top: 34px;
+  left: 18px;
+}
+
+.hotspot-tr .cookie-face i:nth-child(1) {
+  top: 18px;
+  left: 22px;
+}
+
+.hotspot-bl .cookie-face i:nth-child(2) {
+  top: 22px;
+  left: 14px;
+}
+
+.hotspot-br .cookie-face i:nth-child(3) {
+  top: 30px;
+  left: 28px;
 }
 
 .hotspot-tl {
-  top: 6%;
-  left: 10%;
+  top: 4%;
+  left: 4%;
 }
 
 .hotspot-tr {
-  top: 6%;
-  right: 10%;
+  top: 4%;
+  right: 4%;
 }
 
 .hotspot-bl {
-  bottom: 14%;
-  left: 10%;
+  bottom: 28%;
+  left: 4%;
 }
 
 .hotspot-br {
-  bottom: 14%;
-  right: 10%;
+  bottom: 28%;
+  right: 4%;
 }
 
 .hotspot-label {
   position: absolute;
-  left: 50%;
-  top: calc(100% + 10px);
-  transform: translateX(-50%) translateY(4px);
+  top: 50%;
   white-space: nowrap;
-  font-family: Inter, sans-serif;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #111;
-  background: #fff;
-  border-radius: 999px;
-  padding: 5px 10px;
-  opacity: 0;
+  font-family: "Passion One", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  letter-spacing: -0.02em;
+  color: #fff;
+  background: none;
+  padding: 0;
+  text-shadow:
+    0 1px 0 rgba(20, 40, 80, 0.25),
+    0 8px 22px rgba(18, 52, 92, 0.45);
+  opacity: 1;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hotspot-tl .hotspot-label,
+.hotspot-bl .hotspot-label {
+  right: calc(100% + 14px);
+  left: auto;
+  transform: translateY(-50%);
+  text-align: right;
+}
+
+.hotspot-tr .hotspot-label,
+.hotspot-br .hotspot-label {
+  left: calc(100% + 14px);
+  right: auto;
+  transform: translateY(-50%);
+  text-align: left;
 }
 
 .hotspot:hover,
 .hotspot:focus-visible {
-  transform: scale(1.12);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  transform: scale(1.08);
+  box-shadow:
+    0 12px 24px rgba(80, 40, 10, 0.22),
+    inset 0 -3px 6px rgba(120, 60, 20, 0.16);
   outline: none;
-}
-
-.hotspot:hover .hotspot-label,
-.hotspot:focus-visible .hotspot-label {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
 }
 
 .scroll-track {
