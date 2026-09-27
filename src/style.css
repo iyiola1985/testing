@@ -65,10 +65,16 @@ body {
 }
 
 .headline-2 {
-  font-family: Inter, sans-serif;
-  font-weight: 500;
-  font-size: clamp(1.4rem, 3vw, 2.4rem);
-  letter-spacing: 0.04em;
+  font-family: "Lilita One", sans-serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  letter-spacing: 0.03em;
+  color: #fff8e8;
+  -webkit-text-stroke: 7px #2a1408;
+  paint-order: stroke fill;
+  text-shadow:
+    0 2px 0 #2a1408,
+    0 10px 24px rgba(28, 12, 4, 0.45);
   opacity: 0;
 }
 

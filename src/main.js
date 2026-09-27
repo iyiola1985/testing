@@ -1,6 +1,5 @@
 import "./style.css";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -106,48 +105,57 @@ const modelState = {
   ready: false,
 };
 
-modelState.group.position.set(0, -2.4, 1.2);
-modelState.group.rotation.set(0.35, 0.2, 0);
-modelState.group.scale.setScalar(0.85);
+modelState.group.position.set(0, -1.55, 1.4);
+modelState.group.rotation.set(0.28, 0.12, 0.04);
+modelState.group.scale.setScalar(0.88);
 scene.add(modelState.group);
 
-new GLTFLoader().load(
-  "/cookie.glb",
-  (gltf) => {
-    const model = gltf.scene;
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
-        if (child.material?.map) {
-          child.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        }
-      }
-    });
+function createCookieMaterial(texture, tint = 0xffffff) {
+  return new THREE.MeshBasicMaterial({
+    map: texture,
+    color: tint,
+    transparent: true,
+    alphaTest: 0.08,
+    depthWrite: true,
+    fog: false,
+    side: THREE.DoubleSide,
+  });
+}
 
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-    model.position.sub(center);
-    const target = 2.2;
-    const scale = target / Math.max(size.x, size.y, size.z);
-    model.scale.setScalar(scale);
+function createCookie(texture) {
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = true;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.needsUpdate = true;
 
-    modelState.group.add(model);
+  const cookie = new THREE.Group();
+  const front = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.7, 2.7),
+    createCookieMaterial(texture)
+  );
+  const back = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.7, 2.7),
+    createCookieMaterial(texture, 0xd4a06a)
+  );
+  back.rotation.y = Math.PI;
+  back.position.z = -0.12;
+  front.position.z = 0.12;
+  cookie.add(front, back);
+  cookie.renderOrder = 2;
+  return cookie;
+}
+
+const cookieLoader = new THREE.TextureLoader();
+cookieLoader.load(
+  "/cookie.png",
+  (texture) => {
+    modelState.group.add(createCookie(texture));
     modelState.ready = true;
   },
   undefined,
-  () => {
-    const fallback = new THREE.Mesh(
-      new THREE.TorusGeometry(0.9, 0.38, 32, 64),
-      new THREE.MeshStandardMaterial({
-        color: 0xc48a4a,
-        roughness: 0.45,
-        metalness: 0.05,
-      })
-    );
-    modelState.group.add(fallback);
-    modelState.ready = true;
+  (error) => {
+    console.error("Failed to load cookie.png", error);
   }
 );
 
@@ -173,9 +181,9 @@ gsap
     0
   )
   .to(headline2, { opacity: 1, y: 0, duration: 1, ease: "power2.out" }, 0.45)
-  .to(modelState.group.position, { x: 0, y: 0.15, z: 0, ease: "none" }, 0)
-  .to(modelState.group.rotation, { x: 0.1, y: Math.PI * 2.15, z: 0, ease: "none" }, 0)
-  .to(modelState.group.scale, { x: 1, y: 1, z: 1, ease: "none" }, 0);
+  .to(modelState.group.position, { x: 0, y: 0.05, z: 0.6, ease: "none" }, 0)
+  .to(modelState.group.rotation, { x: 0.08, y: Math.PI * 2.05, z: 0, ease: "none" }, 0)
+  .to(modelState.group.scale, { x: 1.08, y: 1.08, z: 1.08, ease: "none" }, 0);
 
 headline2.style.transform = "translateY(24px)";
 
