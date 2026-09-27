@@ -7,7 +7,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 const canvas = document.querySelector("#webgl");
 const letters = document.querySelectorAll(".headline-1 span:not(.space)");
-const headline2 = document.querySelector(".headline-2");
+const letters2 = document.querySelectorAll(".headline-2 span:not(.space)");
+const hotspotStage = document.querySelector(".hotspot-stage");
 
 function createSkyTexture() {
   const skyCanvas = document.createElement("canvas");
@@ -180,12 +181,22 @@ gsap
     },
     0
   )
-  .to(headline2, { opacity: 1, y: 0, duration: 1, ease: "power2.out" }, 0.45)
+  .from(
+    letters2,
+    {
+      y: () => gsap.utils.random(-420, -220),
+      x: () => gsap.utils.random(-160, 160),
+      rotate: () => gsap.utils.random(-40, 40),
+      opacity: 0,
+      stagger: { each: 0.03, from: "random" },
+      ease: "power2.out",
+    },
+    0.35
+  )
+  .to(hotspotStage, { opacity: 1, duration: 1, ease: "power2.out" }, 0.5)
   .to(modelState.group.position, { x: 0, y: 0.05, z: 0.6, ease: "none" }, 0)
   .to(modelState.group.rotation, { x: 0.08, y: Math.PI * 2.05, z: 0, ease: "none" }, 0)
   .to(modelState.group.scale, { x: 1.08, y: 1.08, z: 1.08, ease: "none" }, 0);
-
-headline2.style.transform = "translateY(24px)";
 
 function tick() {
   const t = clock.getElapsedTime();
