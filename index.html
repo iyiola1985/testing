@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Sky Cookie</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -28,18 +28,30 @@
         </span>
         <span class="brand-name">SkyCookie</span>
       </a>
-      <nav class="nav" aria-label="Primary">
-        <a href="#shop">Shop</a>
-        <a href="#cookies">Cookies</a>
-        <a href="#about">About</a>
-        <a href="#ingredients">Ingredients</a>
-      </nav>
       <div class="topbar-actions">
         <span class="nav-dot" aria-hidden="true"></span>
         <span class="nav-dot" aria-hidden="true"></span>
         <span class="nav-dot" aria-hidden="true"></span>
       </div>
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="site-nav"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </header>
+
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a href="#shop">Shop</a>
+      <a href="#cookies">Cookies</a>
+      <a href="#about">About</a>
+      <a href="#ingredients">Ingredients</a>
+    </nav>
 
     <div class="overlay">
       <h1 class="headline headline-1" aria-label="Sky Cookie">

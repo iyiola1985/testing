@@ -9,6 +9,36 @@ const canvas = document.querySelector("#webgl");
 const letters = document.querySelectorAll(".headline-1 span:not(.space)");
 const letters2 = document.querySelectorAll(".headline-2 span:not(.space)");
 const hotspotStage = document.querySelector(".hotspot-stage");
+const menuToggle = document.querySelector(".menu-toggle");
+const siteNav = document.querySelector("#site-nav");
+
+function isMobile() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
+
+function scatterY() {
+  return isMobile()
+    ? gsap.utils.random(-180, -80)
+    : gsap.utils.random(-420, -220);
+}
+
+function scatterX() {
+  return isMobile() ? gsap.utils.random(-70, 70) : gsap.utils.random(-160, 160);
+}
+
+function setMenuOpen(open) {
+  siteNav.classList.toggle("is-open", open);
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+}
+
+menuToggle.addEventListener("click", () => {
+  setMenuOpen(!siteNav.classList.contains("is-open"));
+});
+
+for (const link of siteNav.querySelectorAll("a")) {
+  link.addEventListener("click", () => setMenuOpen(false));
+}
 
 function createSkyTexture() {
   const skyCanvas = document.createElement("canvas");
@@ -175,38 +205,64 @@ gsap
       trigger: document.body,
       start: "top top",
       end: "bottom bottom",
-      scrub: 0.6,
+      scrub: 1.1,
     },
   })
   .to(
     letters,
     {
-      y: () => gsap.utils.random(-420, -220),
-      x: () => gsap.utils.random(-160, 160),
-      rotate: () => gsap.utils.random(-40, 40),
+      y: scatterY,
+      x: scatterX,
+      rotate: () => gsap.utils.random(-28, 28),
       opacity: 0,
-      stagger: { each: 0.03, from: "random" },
-      ease: "power2.out",
+      duration: 0.9,
+      stagger: { each: 0.045, from: "random" },
+      ease: "power3.in",
     },
     0
   )
   .from(
     letters2,
     {
-      y: () => gsap.utils.random(-420, -220),
-      x: () => gsap.utils.random(-160, 160),
-      rotate: () => gsap.utils.random(-40, 40),
+      y: scatterY,
+      x: scatterX,
+      rotate: () => gsap.utils.random(-24, 24),
       opacity: 0,
-      stagger: { each: 0.03, from: "random" },
-      ease: "power2.out",
+      duration: 0.85,
+      stagger: { each: 0.04, from: "start" },
+      ease: "power3.out",
     },
-    0.35
+    1.08
   )
-  .to(hotspotStage, { opacity: 1, duration: 1, ease: "power2.out" }, 0.5)
-  .to(skyMotion, { progress: 1, ease: "none" }, 0)
-  .to(modelState.group.position, { x: 0, y: 0.05, z: 0.6, ease: "none" }, 0)
-  .to(modelState.group.rotation, { x: 0.08, y: Math.PI * 2.05, z: 0, ease: "none" }, 0)
-  .to(modelState.group.scale, { x: 1.08, y: 1.08, z: 1.08, ease: "none" }, 0);
+  .to(hotspotStage, { opacity: 1, duration: 0.5, ease: "power2.out" }, 1.7)
+  .to(skyMotion, { progress: 1, duration: 2.3, ease: "none" }, 0)
+  .to(
+    modelState.group.position,
+    {
+      x: 0,
+      y: isMobile() ? 0.28 : 0.05,
+      z: isMobile() ? 1.35 : 0.6,
+      duration: 1.85,
+      ease: "power2.inOut",
+    },
+    0.12
+  )
+  .to(
+    modelState.group.rotation,
+    { x: 0.1, y: 0.52, z: -0.04, duration: 2.15, ease: "power1.inOut" },
+    0
+  )
+  .to(
+    modelState.group.scale,
+    {
+      x: isMobile() ? 0.78 : 1.08,
+      y: isMobile() ? 0.78 : 1.08,
+      z: isMobile() ? 0.78 : 1.08,
+      duration: 1.85,
+      ease: "power2.inOut",
+    },
+    0.12
+  );
 
 function tick() {
   const t = clock.getElapsedTime();
@@ -230,11 +286,22 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
-tick();
-
-window.addEventListener("resize", () => {
+function fitScene() {
+  const mobile = isMobile();
+  camera.position.z = mobile ? 8.2 : 6;
+  camera.fov = mobile ? 42 : 35;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
+  ScrollTrigger.refresh();
+  if (!mobile) {
+    setMenuOpen(false);
+  }
+}
+
+tick();
+fitScene();
+
+window.addEventListener("resize", fitScene);
+window.visualViewport?.addEventListener("resize", fitScene);
