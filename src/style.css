@@ -1,0 +1,78 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background: linear-gradient(180deg, #1d6ec7 0%, #5eb4ea 42%, #c5e6f8 72%, #f6e7c4 100%);
+  color: #fff;
+  overflow-x: hidden;
+}
+
+body {
+  height: 300vh;
+}
+
+#webgl {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 0;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.headline {
+  position: absolute;
+  text-align: center;
+  max-width: 90vw;
+  text-shadow: 0 6px 28px rgba(18, 52, 92, 0.28);
+}
+
+.headline-1 {
+  font-family: "Passion One", sans-serif;
+  font-weight: 700;
+  font-size: clamp(4.5rem, 14vw, 12rem);
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.02em;
+}
+
+.headline-1 span {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.headline-1 .space {
+  width: 0.35em;
+}
+
+.headline-2 {
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  letter-spacing: 0.04em;
+  opacity: 0;
+}
+
+.scroll-track {
+  height: 300vh;
+  pointer-events: none;
+}
