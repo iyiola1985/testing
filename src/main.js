@@ -2,6 +2,7 @@ import "./style.css";
 import * as THREE from "three";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initIceCream } from "./iceCream.js";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({
@@ -12,22 +13,11 @@ ScrollTrigger.config({
 const canvas = document.querySelector("#webgl");
 const letters = document.querySelectorAll(".headline-1 span:not(.space)");
 const letters2 = document.querySelectorAll(".headline-2 span:not(.space)");
-const hotspotStage = document.querySelector(".hotspot-stage");
 const menuToggle = document.querySelector(".menu-toggle");
 const siteNav = document.querySelector("#site-nav");
 
 function isMobile() {
   return window.matchMedia("(max-width: 768px)").matches;
-}
-
-function scatterY() {
-  return isMobile()
-    ? gsap.utils.random(-180, -80)
-    : gsap.utils.random(-420, -220);
-}
-
-function scatterX() {
-  return isMobile() ? gsap.utils.random(-70, 70) : gsap.utils.random(-160, 160);
 }
 
 function setMenuOpen(open) {
@@ -44,59 +34,48 @@ for (const link of siteNav.querySelectorAll("a")) {
   link.addEventListener("click", () => setMenuOpen(false));
 }
 
-function createSkyTexture() {
-  const skyCanvas = document.createElement("canvas");
-  skyCanvas.width = 2;
-  skyCanvas.height = 512;
-  const ctx = skyCanvas.getContext("2d");
-  const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-  gradient.addColorStop(0, "#1d6ec7");
-  gradient.addColorStop(0.42, "#5eb4ea");
-  gradient.addColorStop(0.72, "#c5e6f8");
-  gradient.addColorStop(1, "#f6e7c4");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 2, 512);
+const scene = new THREE.Scene();
 
-  const texture = new THREE.CanvasTexture(skyCanvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.magFilter = THREE.LinearFilter;
-  texture.minFilter = THREE.LinearFilter;
-  return texture;
-}
+const skyCanvas = document.createElement("canvas");
+const skyContext = skyCanvas.getContext("2d");
+const skyTexture = new THREE.CanvasTexture(skyCanvas);
+skyTexture.colorSpace = THREE.SRGBColorSpace;
+skyTexture.magFilter = THREE.LinearFilter;
+skyTexture.minFilter = THREE.LinearFilter;
+scene.background = skyTexture;
 
-function createCloud(x, y, z, scale) {
-  const group = new THREE.Group();
-  const material = new THREE.MeshLambertMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.88,
-    depthWrite: false,
-  });
-  const puffs = [
-    [0, 0, 0, 1],
-    [0.85, 0.12, 0.1, 0.78],
-    [-0.75, 0.08, -0.08, 0.72],
-    [0.18, 0.38, 0.04, 0.55],
-    [-0.2, 0.06, 0.32, 0.5],
-  ];
-  const segments = isMobile() ? 10 : 16;
+let skyImage = null;
 
-  for (const [px, py, pz, size] of puffs) {
-    const puff = new THREE.Mesh(new THREE.SphereGeometry(1, segments, segments), material);
-    puff.position.set(px, py, pz);
-    puff.scale.set(size * 1.45, size * 0.82, size);
-    group.add(puff);
+function layoutSky() {
+  const viewAspect = window.innerWidth / Math.max(1, window.innerHeight);
+  const width = 1600;
+  const height = Math.max(1, Math.round(width / viewAspect));
+  skyCanvas.width = width;
+  skyCanvas.height = height;
+  skyContext.fillStyle = "#8fd0f5";
+  skyContext.fillRect(0, 0, width, height);
+
+  if (skyImage) {
+    const scale = Math.max(width / skyImage.naturalWidth, height / skyImage.naturalHeight);
+    const drawWidth = skyImage.naturalWidth * scale;
+    const drawHeight = skyImage.naturalHeight * scale;
+    skyContext.drawImage(
+      skyImage,
+      (width - drawWidth) / 2,
+      (height - drawHeight) / 2,
+      drawWidth,
+      drawHeight
+    );
   }
 
-  group.position.set(x, y, z);
-  group.scale.setScalar(scale);
-  return group;
+  skyTexture.needsUpdate = true;
 }
 
-const scene = new THREE.Scene();
-const skyTexture = createSkyTexture();
-scene.background = skyTexture;
-scene.fog = new THREE.Fog(0xc5e6f8, 12, 38);
+const skyLoader = new THREE.TextureLoader();
+skyLoader.load("/hero-bg.jpg", (texture) => {
+  skyImage = texture.image;
+  layoutSky();
+});
 
 const camera = new THREE.PerspectiveCamera(
   35,
@@ -108,9 +87,11 @@ camera.position.set(0, 0, 6);
 
 const renderer = new THREE.WebGLRenderer({
   canvas,
+  alpha: true,
   antialias: !isMobile(),
   powerPreference: "high-performance",
 });
+renderer.setClearColor(0x000000, 0);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile() ? 1.5 : 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -126,24 +107,6 @@ const rim = new THREE.DirectionalLight(0xffffff, 0.45);
 rim.position.set(-4, 2, -3);
 scene.add(rim);
 
-const skyRig = new THREE.Group();
-const clouds = [
-  createCloud(-6.2, 2.4, -10, 1.6),
-  createCloud(6.8, 1.6, -12, 2.1),
-  createCloud(-1.4, 3.2, -16, 1.35),
-  createCloud(3.2, -2.4, -14, 1.8),
-];
-for (const cloud of clouds) {
-  skyRig.add(cloud);
-}
-
-scene.add(skyRig);
-
-const skyMotion = { progress: 0 };
-const cloudBases = clouds.map((cloud) => cloud.position.clone());
-const fogStart = new THREE.Color(0xc5e6f8);
-const fogEnd = new THREE.Color(0xe8d7b0);
-
 const clock = new THREE.Clock();
 const modelState = {
   group: new THREE.Group(),
@@ -151,9 +114,9 @@ const modelState = {
   ready: false,
 };
 
-modelState.group.position.set(0, -1.55, 1.4);
+modelState.group.position.set(0, -0.7, 1.4);
 modelState.group.rotation.set(0.28, 0.12, 0.04);
-modelState.group.scale.setScalar(0.88);
+modelState.group.scale.setScalar(0.74);
 modelState.group.add(modelState.float);
 scene.add(modelState.group);
 
@@ -209,7 +172,7 @@ cookieLoader.load(
 gsap
   .timeline({
     scrollTrigger: {
-      trigger: document.body,
+      trigger: ".scroll-track",
       start: "top top",
       end: "bottom bottom",
       scrub: isMobile() ? 0.35 : 0.85,
@@ -219,31 +182,29 @@ gsap
   .to(
     letters,
     {
-      y: scatterY,
-      x: scatterX,
-      rotate: () => gsap.utils.random(-28, 28),
+      y: () => (isMobile() ? -70 : -110),
+      x: 0,
+      rotate: 0,
       opacity: 0,
       duration: 0.9,
-      stagger: { each: 0.045, from: "random" },
-      ease: "power3.in",
+      stagger: { each: 0.03, from: "center" },
+      ease: "power2.in",
     },
     0
   )
   .from(
     letters2,
     {
-      y: scatterY,
-      x: scatterX,
-      rotate: () => gsap.utils.random(-24, 24),
+      y: () => (isMobile() ? 36 : 48),
+      x: 0,
+      rotate: 0,
       opacity: 0,
       duration: 0.85,
-      stagger: { each: 0.04, from: "start" },
-      ease: "power3.out",
+      stagger: { each: 0.03, from: "center" },
+      ease: "power2.out",
     },
     1.08
   )
-  .to(hotspotStage, { opacity: 1, duration: 0.5, ease: "power2.out" }, 1.7)
-  .to(skyMotion, { progress: 1, duration: 2.3, ease: "none" }, 0)
   .to(
     modelState.group.position,
     {
@@ -274,21 +235,10 @@ gsap
 
 function tick() {
   const t = clock.getElapsedTime();
-  const p = skyMotion.progress;
 
   if (modelState.ready) {
     modelState.float.position.y = Math.sin(t * 1.2) * 0.04;
   }
-
-  skyRig.position.set(p * 5.8, p * 2.6, 0);
-  skyRig.rotation.z = p * 0.08;
-  scene.fog.color.copy(fogStart).lerp(fogEnd, p);
-
-  clouds.forEach((cloud, index) => {
-    const base = cloudBases[index];
-    cloud.position.x = base.x + Math.sin(t * 0.12 + base.z) * 0.35;
-    cloud.position.y = base.y + Math.cos(t * 0.09 + index) * 0.18;
-  });
 
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
@@ -307,6 +257,7 @@ function fitScene(forceRefresh = false) {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.5 : 2));
+  layoutSky();
 
   if (forceRefresh || widthChanged) {
     ScrollTrigger.refresh();
@@ -316,6 +267,7 @@ function fitScene(forceRefresh = false) {
   }
 }
 
+initIceCream();
 tick();
 fitScene(true);
 
